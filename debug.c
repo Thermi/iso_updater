@@ -1,5 +1,16 @@
 /*
- * (c) 2014 Oliver Gebhardt
+ * Copyright (C) 2014 Noel Kuntze <noel@familie-kuntze.de>
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdio.h>
@@ -9,18 +20,15 @@
 #include <stdint.h>
 #include <fcntl.h>
 
-#include "debug.h"
-
 
 /*
  * If a fatal error occurs, this function is called and the program exits.
  *
  */
 void fatal(char *message) {
-    char error_message[100];
-
-    strcpy(error_message, "[!!] Fatal Error ");
-    strncat(error_message, message, 83);
+    char *prefix ="[!!] Fatal Error: ", error_message[strlen(prefix)+strlen(message)+1];
+    strcpy(error_message, prefix);
+    strcat(error_message, message);
     perror(error_message);
     exit(-1);
 }
@@ -29,19 +37,20 @@ void fatal(char *message) {
  * Memory allocatio with error handling
  * malloc + calloc
  */
-void *ec_malloc(unsigned int size) {
+void *ec_malloc(size_t size) {
     void *ptr;
     ptr = malloc(size);
     if (ptr == NULL) {
-        fatal("in ec_malloc() on memory allocation");
+        fatal("in ec_malloc() on memory allocation.\n");
     }
     return ptr;
 }
-void *ec_calloc(unsigned int size) {
+
+void *ec_calloc(size_t nmemb, size_t size) {
     void *ptr;
-    ptr = calloc(0, size);
+    ptr = calloc(nmemb, size);
     if (ptr == NULL) {
-        fatal("in ec_calloc() on memory allocation");
+        fatal("in ec_calloc() on memory allocation.\n");
     }
     return ptr;
 }
@@ -54,7 +63,7 @@ void *ec_calloc(unsigned int size) {
  * man 3 read
  * man 3 write
  *
- * Write con tent of the file into the buffer and vice versa
+ * Write content of the file into the buffer and vice versa
  */
 int ec_open(const char *filename, int mode) {
     int fd;
