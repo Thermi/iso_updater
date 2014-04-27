@@ -1,62 +1,35 @@
 /*
- * File:   main.c
- * Author: thermi
+ * Copyright (C) 2014 Noel Kuntze <noel@familie-kuntze.de>
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as published by
+ * the Free Software Foundation.
  *
- * Created on 16. Februar 2014, 23:39
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * Default includes
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <regex.h>
-#include <unistd.h>
 #include <stdint.h>
-#include <fcntl.h>
-
-/*
- * Libraries
- */
-
-#include <curl/curl.h>
-#include <expat.h>
+#include <unistd.h>
 
 #include "debug.h"
+#include "util.h"
+#include "protocols.h"
+#include "memory.h"
 
-struct memory {
-    uint8_t *chunk;
-    size_t length;
-};
 
-/* This is a callback function to use with cURL, because we want the HTML file
- * to be stored in memory, not in a file.
- * ptr is the pointer to the data that is passed on to the function by cURL.
- * The length of the memory segment is size*nmemb. The pointer userdata is the
- * pointer that we give to cURL ourselves and is of the type struct memory.
- */
-size_t writeDataCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-
-    struct memory *memory = userdata;
-
-    /* Calculate the size of the new chunk */
-    size_t newlength = size * nmemb + (*memory).length;
-    /* Get a longer memory segment */
-    uint8_t *newchunk = malloc(newlength);
-
-    /* This is to check if it is the first time the function is run by cURL */
-    if ((*memory).chunk != NULL) {
-        /* Copy the content of the old chunk into the new chunk */
-        memcpy(newchunk, (*memory).chunk, (*memory).length);
-        free((*memory).chunk);
-    }
-    /* Concatenate the new data onto the old one */
-    memcpy(newchunk + (*memory).length, ptr, size * nmemb);
-
-    (*memory).chunk = newchunk;
-    (*memory).length = newlength;
-
-    return size*nmemb;
-}
+/* CHANGE THIS IF YOU WANT TO USE ANOTHER DEFAULT MIRROR! */
+#define DEFAULT_MIRROR "ftp://ftp.archlinux.org/iso/"
 
 /*
  * This program is supposed to get the newest archlinux-dual.iso
@@ -64,72 +37,108 @@ size_t writeDataCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
  */
 int main(int argc, char** argv)
 {
-
+    
+    /* The options struct that holds all the options */
     /*
      * Declaring the used variables and their defaults.
      */
-    char *outputpath = NULL; /* The file the downloaded iso should be written to */
-    char *buffer = NULL; /* A buffer for downloading with cURL */
-    char *url = "https://archlinux.limun.org/iso/"; /* This stores the url
-                                                     * the newest ISO is
-                                                     * searched in. */
-    char *interface = NULL;
-    CURL *cURLhandle;
-    /* Stuff for the errorcode */
-    CURLcode cURLerrorcode;
-    /* Buffer for the error message */
-    char *errormessage = ec_malloc(CURL_ERROR_SIZE);
+    struct options options;
+    options.http = 0;
+    options.https = 0;
+    options.ftp = 0;
+    options.rsync = 0;
+    options.overwritteExistingFile = 0;
+    options.signature = 0;
+    options.script = NULL;
+    options.interface = NULL;
+    options.outputpath = NULL;
+    options.url = DEFAULT_MIRROR;
+    options.xpath = NULL;
     /* The memory segment we are going to use for the data cURL downloads.
      */
-    struct memory memory;
-    memory.chunk = NULL;
-    memory.length = 0;
 
-    /* The memory segment we are going to use for the header of
-     * the data cURL downloads.
-     */
-    struct memory headers;
-    headers.chunk = NULL;
-    headers.length = 0;
-    uint32_t i; /* counter variable for a for loop */
-
+    /* counter variable for a for loop */
+    int i;
+    /* return value for function calls */
+    int ret = 1;
+    char useNextMethod = 1;
     /*
      * Parsing argv:
      *
      * Recognized parameters are:
      * -u : For the url
      * -o : For the path where the file should be written to.
+     * -f : To indicate, that an existing file should be overwritten
+     * -e : Specifies a script, that should be executed after the file has been downloaded.
+     *          it will execute the following: scriptname isoname
+     * -s : To specifiy, that the signature of the file should be checked
      * -X : For the xpath to the html entries
      * -i : For the interface cURL should be using.
+     * --ftp : To indicate, that the mirror supports ftp
+     * --http : To indicate, that the mirror supports http
+     * --https : To indicate, that the mirror supports https
+     * --rsync: To indicate, that the mirror supports rsync
      */
+
     for (i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-u")) {
+        if (!strcmp(argv[i], "-u")) {
             if (i + 1 < argc) {
-                url = argv[i + 1];
+                options.url = argv[i + 1];
                 i++;
             } else {
                 fatal("You need to specify a valid URL after the \"-u\" option!\n");
             }
-        } else if (strcmp(argv[i], "-o")) {
+        } else if (!strcmp(argv[i], "-o")) {
             if (i + 1 < argc) {
-                outputpath = argv[i + 1];
+                options.outputpath = argv[i + 1];
                 i++;
             } else {
                 fatal("You need to specify a path after the \"-o\" option!\n");
             }
-        } else if (strcmp(argv[i], "-i")) {
+        } else if(!strcmp(argv[i], "-e")) {
+            if(i + 1 < argc) {
+                options.script = argv[i + 1];
+                i++;
+            } else {
+                fatal("You need to specify a path to a script after the \"-e\" option!\n");
+            }
+        }else if (!strcmp(argv[i], "-f")) {
+            options.overwritteExistingFile = 1;
+        } else if (!strcmp(argv[i], "-i")) {
             if (i + 1 < argc) {
-                interface = argv[i + 1];
+                options.interface = argv[i + 1];
                 i++;
             }
-
-        } else {
-            /* Print the error message with the
+        } else if (!strcmp(argv[i], "-x")) {
+            if (i + 1 < argc) {
+                options.xpath = (xmlChar *) argv[i + 1];
+                i++;
+            } else {
+                fatal("You need to specify an xpath after the \"-x\" option!\n");
+            }
+        } else if (!strcmp(argv[i], "-s")) {
+            options.signature = 1;
+        } else if (!strcmp(argv[i], "--ftp")) {
+            options.ftp = 1;
+        } else if (!strcmp(argv[i], "--http")) {
+            options.http = 1;
+        } else if (!strcmp(argv[i], "--https")) {
+            options.https = 1;
+        } else if (!strcmp(argv[i], "--rsync")) {
+            options.rsync = 1;
+        } else if(!strcmp(argv[i], "--help")) {
+            printHelpMessage(stderr);
+            printLicence(stderr);
+            return 0;
+        }
+        else
+        {
+            /* Print the error message with the unknown parameter.
              */
             char *error_prefix = "The option \"",
                     *error_suffix = "\" isn't known to this program!\n";
 
-            char *error = ec_malloc(sizeof (char)*(strlen(argv[i]) +
+            char *error = ec_malloc((strlen(argv[i]) +
                     strlen(error_prefix) + strlen(error_suffix) + 2));
             strcat(error, error_prefix);
             strcat(error, argv[i]);
@@ -138,63 +147,91 @@ int main(int argc, char** argv)
         }
     }
 
+    /* Do some testing for the protocol in the url and enable the protocol support */
+    if (strstr(options.url, "http://"))
+        options.http = 1;
+    else if (strstr(options.url, "https://"))
+        options.https = 1;
+    else if (strstr(options.url, "ftp://"))
+        options.ftp = 1;
+    else if (strstr(options.url, "rsync://"))
+        options.rsync = 1;
+
+    /* check if the script is executable */
+    if(options.script != NULL && access(options.script, X_OK) != 0)
+        fatal("The script isn't executable!\n");
+    
+    /* length variable*/
+    size_t length = strlen(options.url);
+    char urlIsOnHeap = 0;
+    /* add the missing /, if the user didn't specify the url with it */
+    if(options.url[length-1] != '/') {
+        char *foo = ec_malloc(length+2);
+        memcpy(foo, options.url, length+1);
+        strcat(foo, "/");
+        options.url = foo;
+        urlIsOnHeap = 1;
+        printf("new url: %s\n", options.url);
+        /* check, if the user has given the iso subdirectory */
+    }
+
     /* Check if the user already gave us the /iso/ subdirectory where
      * ISOs are usually stored in on the mirror
+     * We don't need to take care of double forward slashes, 
+     * because curl handles that fine.
      */
-    if (!strstr(url, "/iso/")) {
-        char *newurl = ec_malloc(sizeof (char)*(strlen(url) + 6));
-        strcat(newurl, url);
-        strcat(newurl, "/iso/");
+    if (!strstr(options.url, "/iso/")) {
+        char *newurl = ec_malloc((strlen(options.url) + 6));
+        strcpy(newurl, options.url);
+        if(options.url[strlen(options.url)] != '/')
+            strcat(newurl, "iso/");
+        else
+            strcat(newurl, "/iso/");
+        if(urlIsOnHeap)
+            free(options.url);
+        options.url = newurl;
+        printf("new url: %s\n", options.url);
         /* <protocol>//host//iso/ should work just fine in cURL, so it isn't catched. */
     }
-    cURLhandle = curl_easy_init();
-    if (cURLhandle == NULL)
-        fatal("Something went wrong with curl. Aborting...\n");
-
-    /* We are probably be using HTTP, so we need the header */
-    //curl_easy_setopt(cURLhandle, CURLOPT_HEADER, 1);
-    /* Setting the outbound interface for cURL*/
-    if (interface != NULL)
-        curl_easy_setopt(cURLhandle, CURLOPT_INTERFACE, interface);
-
-    /* We want the data to be in memory. */
-    curl_easy_setopt(cURLhandle, CURLOPT_WRITEFUNCTION, writeDataCallback);
-    curl_easy_setopt(cURLhandle, CURLOPT_WRITEDATA, &memory);
-
-    /* The same for the headers */
-    curl_easy_setopt(cURLhandle, CURLOPT_HEADERFUNCTION, writeDataCallback);
-    curl_easy_setopt(cURLhandle, CURLOPT_WRITEHEADER, &headers);
-
-    /* Set the error message buffer */
-    curl_easy_setopt(cURLhandle, CURLOPT_ERRORBUFFER, errormessage);
-
-    /* Set the mirror's URL, so cURL knows where to download from */
-    curl_easy_setopt(cURLhandle, CURLOPT_URL, url);
-
-    printf("Downloading the HTML file...\n");
-    cURLerrorcode = curl_easy_perform(cURLhandle);
-    printf("Tried downloading the file...\n");
-
-    if (cURLerrorcode != CURLE_OK) {
-
-        printf("Bah, curl didn't like it:\n");
-        printf("%s%s\n", "CURL encountered an error:\n", curl_easy_strerror(cURLerrorcode));
-        printf("Errormessage: %s\n", errormessage);
-
-        if (memory.chunk != NULL) {
-            printf("Content of the memory:\n");
-            printf("%s\n", memory.chunk);
+    
+    if (options.http == 1 || options.https == 1) {
+        fprintf(stdout, "Using http(s) transfer method...\n");
+        ret = handleHTTP(options);
+        switch (ret) {
+        case 0: useNextMethod = 0;
+            break;
+        case 1: useNextMethod = 1;
+            break;
+        default: useNextMethod = 1;
+            break;
         }
-
-    } else {
-
-        printf("Got the HTML file.\n");
-        printf("Headers:\n");
-        printf("%s", (char *) headers.chunk);
-        printf("Dumping the file: \n");
-        printf("%s", (char *) memory.chunk);
-
     }
-    curl_easy_cleanup(cURLhandle);
+
+    if (useNextMethod && options.ftp) {
+        fprintf(stdout, "Using ftp transfer method...\n");
+        ret = handleFTP(options);
+        switch (ret) {
+        case 0: useNextMethod = 0;
+            break;
+        case 1: useNextMethod = 1;
+            break;
+        default: useNextMethod = 1;
+            break;
+        }
+    }
+    if (useNextMethod && options.rsync) {
+        fprintf(stdout, "Using rsync transfer method...\n");
+        ret = handleRSYNC(options);
+        }
+    if(ret == 1) {
+        fprintf(stderr, "Could not get the file. Sorry.\n");
+        return (EXIT_FAILURE);
+    }
+    /* Execute the script */
+    if(ret == 0 && options.script != NULL)
+    {
+        system(options.script);
+    }
+
     return (EXIT_SUCCESS);
 }
