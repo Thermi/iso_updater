@@ -1,0 +1,3 @@
+gcc check.c md5sum.c memory.c util.c sha1.c debug.c -o check -lcurl -lxml2 -lgpgme -lassuan -lgpg-error -std=c11 -Wall -ggdb -O2 
+-march=native -fbuiltin -W -Wstrict-prototypes -Wreturn-type -Wsequence-point -pedantic -Wextra -I/usr/include/libxml2/ 
+-fstack-protector-all
