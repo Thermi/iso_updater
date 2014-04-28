@@ -24,7 +24,7 @@ all:
 	make check
 build:
 	$(CC) $(CFLAGSOPT) $(LIBS) $(LIBFILES) -o iso_updater $(TRGT)
-ceck:
+check:
 	$(CC) $(CFLAGSOPT) $(LIBS) $(LIBFILES) -o check check.c
 debug:
 	$(CC) $(CFLAGS) $(LIBS) $(TRGT)
