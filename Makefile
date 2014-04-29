@@ -14,7 +14,8 @@
 
 CC=LANG=C gcc
 RM=rm
-CFLAGS=-std=c11 -Wall -ggdb -O0 -fbuiltin -W -Wstrict-prototypes -Wreturn-type -Wsequence-point -pedantic -Wextra -I/usr/include/libxml2/
+CFLAGS=-std=c11 -Wall -ggdb -O0 -fbuiltin -W -Wstrict-prototypes -Wreturn-type -Wsequence-point -pedantic -I/usr/include/libxml2/
+CFLAGSDEBUG=-std=c11 -Wall -ggdb -O0 -fbuiltin -W -Wstrict-prototypes -Wreturn-type -Wsequence-point -p -pedantic -Wextra -I/usr/include/libxml2/
 CFLAGSOPT=-std=c11 -Wall -ggdb -O2 -march=native -fbuiltin -W -Wstrict-prototypes -Wreturn-type -Wsequence-point -pedantic -Wextra -I/usr/include/libxml2/ -fstack-protector-all
 TRGT=main.c
 LIBS=-lcurl -lxml2 -lgpgme -lassuan -lgpg-error
@@ -27,6 +28,6 @@ build:
 check:
 	$(CC) $(CFLAGSOPT) $(LIBS) $(LIBFILES) -o check check.c
 debug:
-	$(CC) $(CFLAGS) $(LIBS) $(TRGT)
+	$(CC) $(CFLAGSDEBUG) $(LIBS) $(LIBFILES) -o iso_updater $(TRGT)
 clean:
 	./remove.sh
