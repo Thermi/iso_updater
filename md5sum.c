@@ -71,7 +71,7 @@ size_t digest_hex_bytes;
    of backslashes or if it contains a backslash followed by anything other
    than "n" or another backslash, return NULL.  */
 
-inline void *
+void *
 ptr_align(void const *ptr, size_t alignment)
 {
     char const *p0 = ptr;
