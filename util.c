@@ -14,7 +14,7 @@
  */
 
 /*
- * TODO: Implement own version of getline() for memory access and replace all 
+ * TODO: Implement own version of getline() for memory access and replace all
  * calls of getline() with calls to the own version
  */
 /*
@@ -76,22 +76,6 @@ struct options {
     /* The xpath inside the html file to the list of elements that contain the directory names, in which the ISOs are */
     xmlChar *xpath;
 };
-
-
-
-/* This function takes a path and gets the basename (the file name) of it */
-char *basename(const char *string)
-{
-    /* strtok() modifies the string, so we need to make a copy of it */
-    char *path = ec_malloc(strlen(string) + 1), *ptr = NULL, *tmp;
-    memcpy(path, string, strlen(string));
-    tmp = strtok(path, "/");
-    while ((tmp = strtok(NULL, "/")) && tmp != NULL)
-        ptr = tmp;
-    return ptr;
-}
-
-
 
 /* This function does the same as strstr(), but takes an additional length argument */
 char *strnstr(char *haystack, char* needle, int haystack_length)
@@ -181,14 +165,14 @@ int check(char *string)
 int meom(struct memory_identifier *memory) {
     if(memory == NULL)
         return false;
-    
+
     return (int) memory->eom;
 }
 
 int mrewind(struct memory_identifier *memory) {
     if(memory == NULL)
         return false;
-    
+
     memory->position = 0;
     return true;
 }

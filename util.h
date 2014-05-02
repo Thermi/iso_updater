@@ -50,9 +50,6 @@ struct options {
     xmlChar *xpath;
 };
 
-/* This function takes a path and gets the basename (the file name) of it */
-char *basename(const char *string);
-
 /* This function does the same as strstr(), but takes an additional length argument */
 char *strnstr(char *haystack, char* needle, int haystack_length);
 
