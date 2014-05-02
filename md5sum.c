@@ -24,6 +24,7 @@
 #include <fcntl.h>
 #include <error.h>
 #include <libintl.h>
+#include <libgen.h>
 
 #include "sha1.h"
 #include "memory.h"
@@ -56,10 +57,10 @@
 
 
 /* The minimum length of a valid checksum line for the selected algorithm.  */
-size_t min_digest_line_length;
+size_t min_digest_line_length = MIN_DIGEST_LINE_LENGTH;
 
 /* Set to the length of a digest hex string for the selected algorithm.  */
-size_t digest_hex_bytes;
+size_t digest_hex_bytes = DIGEST_HEX_BYTES;
 
 #define ISWHITE(c) ((c) == ' ' || (c) == '\t')
 
