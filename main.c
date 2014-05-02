@@ -35,7 +35,7 @@
  * This program is supposed to get the newest archlinux-dual.iso
  * from a given mirror
  */
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     
     /* The options struct that holds all the options */
