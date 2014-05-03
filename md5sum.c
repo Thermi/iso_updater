@@ -337,8 +337,6 @@ digest_check(char *path, struct memory_identifier *memory)
                 && hex_digits(hex_digest))) {
             ++n_misformatted_lines;
             ++n_improperly_formatted_lines;
-            printf("Protoype: %s\n", line);
-            printf("file name: %s\n", filename);
             printf("misformatted lines: %ju\n", n_misformatted_lines);
             printf("improperly formatted lines: %ju\n", n_improperly_formatted_lines);
         } else {
