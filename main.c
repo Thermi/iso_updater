@@ -102,7 +102,7 @@ int main(int argc, char **argv)
             } else {
                 fatal("You need to specify a path to a script after the \"-e\" option!\n");
             }
-        }else if (!strcmp(argv[i], "-f")) {
+        } else if (!strcmp(argv[i], "-f")) {
             options.overwriteExistingFile = 1;
         } else if (!strcmp(argv[i], "-i")) {
             if (i + 1 < argc) {
