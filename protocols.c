@@ -170,20 +170,31 @@ int handleHTTP(struct options options) {
 int handleFTP(struct options options) {
     struct memory_identifier *list, *sha1sums, *signature;
     int n, returnvalue;
-    char directory[strlen(options.url) + directorylength + 1],
-            retry, *ptr, fileName[isolength],
+    char directory[strlen(options.url) + directorylength + 8],
+            retry = 0, *ptr, fileName[isolength],
             *outputFileName, *signatureURL, buffer[CURL_ERROR_SIZE];
 
     list = create_memory_identifier();
     sha1sums = create_memory_identifier();
     signature = create_memory_identifier();
 
+    /* Because of a bug in cURL, we have to prepend the protocol to be used to the URL, if it's not already included.
+     * cURL currently does not seem to honor CURLOPT_PROTOCOLS
+     */
+
+    /* H4CKS! */
+    memset(directory, 0, strlen(options.url)+directorylength+8);
+    strcpy(directory, "ftp://");
+    strcat(directory, options.url);
+
+    /* END OF H4CKS! */
 
     FILE *file = NULL;
     CURL *cURLhandle = NULL;
     CURLcode cURLerrorcode = 0;
 
-    strcpy(directory, options.url);
+    /* strcpy(directory, options.url); */
+
     strcat(directory, "latest");
     strcat(directory, "/");
 
