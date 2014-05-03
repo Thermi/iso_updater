@@ -207,15 +207,14 @@ int handleFTP(struct options options) {
     /* We want the listing to be in memory. */
     curl_easy_setopt(cURLhandle, CURLOPT_WRITEFUNCTION, writeDataCallback);
     curl_easy_setopt(cURLhandle, CURLOPT_WRITEDATA, list);
-    printf("directory: %s\n", directory);
-
     n = 0;
     do {
         cURLerrorcode = curl_easy_perform(cURLhandle);
         switch (cURLerrorcode) {
             case CURLE_OK:
                 retry = 0;
-                fprintf(stdout, "Got the directory listing.\n");
+                if(options.verbose)
+                    fprintf(stdout, "Got the directory listing.\n");
                 break;
             case CURLE_FTP_WEIRD_PASS_REPLY:
                 fprintf(stderr, "The server returned a weird code. Trying again.\n");
@@ -274,8 +273,6 @@ int handleFTP(struct options options) {
     /* Construct URL to sha1sums->txt */
     char sha1sumsURL[strlen(options.url) + directorylength + sha1sumslength + 3];
     sprintf(sha1sumsURL, "%s%s", directory, "sha1sums.txt");
-    printf("sha1sumsURL: %s\n", sha1sumsURL);
-    printf("iso: %s\n", iso);
     /* Build the output path
      * If it is not set, write the iso to the current work directory
      */
@@ -316,7 +313,8 @@ int handleFTP(struct options options) {
         cURLerrorcode = curl_easy_perform(cURLhandle);
         switch (cURLerrorcode) {
             case CURLE_OK:
-                fprintf(stdout, "Got the iso from the mirror.\n");
+                if(options.verbose)
+                    fprintf(stdout, "Got the iso from the mirror.\n");
                 retry = 0;
                 break;
             case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
@@ -365,7 +363,8 @@ int handleFTP(struct options options) {
         cURLerrorcode = curl_easy_perform(cURLhandle);
         switch (cURLerrorcode) {
             case CURLE_OK:
-                fprintf(stdout, "Got the sha1sums.txt file from the server");
+                if(options.verbose)
+                    fprintf(stdout, "Got the sha1sums.txt file from the server");
                 retry = 0;
                 break;
             case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
@@ -409,7 +408,6 @@ int handleFTP(struct options options) {
     if (options.signature) {
         signatureURL = ec_malloc(strlen(iso) + 5);
         sprintf(signatureURL, "%s%s", iso, ".sig");
-        printf("SignatureURL: %s\n", signatureURL);
         curl_easy_setopt(cURLhandle, CURLOPT_URL, signatureURL);
         curl_easy_setopt(cURLhandle, CURLOPT_WRITEDATA, signature);
 
@@ -418,7 +416,8 @@ int handleFTP(struct options options) {
             cURLerrorcode = curl_easy_perform(cURLhandle);
             switch (cURLerrorcode) {
                 case CURLE_OK:
-                    fprintf(stdout, "Got the signature from the mirror.\n");
+                    if(options.verbose)
+                        fprintf(stdout, "Got the signature from the mirror.\n");
                     retry = 0;
                     break;
                 case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
@@ -458,8 +457,6 @@ int handleFTP(struct options options) {
 
     }
     /* check dual-iso with sha1sum*/
-    printf("Length of sha1sums: %zu\n", sha1sums->length);
-    printf("Content of sha1sums: %s\n", sha1sums->chunk);
     returnvalue = digest_check(outputFileName, sha1sums);
 
     if (options.signature) {

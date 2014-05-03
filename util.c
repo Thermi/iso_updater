@@ -60,18 +60,17 @@ struct optionsArray {
     struct option *options;
 };
 
-
-
 struct options {
+    char ftp;
     char http;
     char https;
-    char ftp;
     char rsync;
     char overwriteExistingFile;
     char signature;
-    char *script;
-    char *outputpath;
+    char verbose;
     char *interface;
+    char *outputpath;
+    char *script;
     char *url;
     /* The xpath inside the html file to the list of elements that contain the directory names, in which the ISOs are */
     xmlChar *xpath;

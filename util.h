@@ -36,15 +36,16 @@ struct optionsArray {
 };
 
 struct options {
+    char ftp;
     char http;
     char https;
-    char ftp;
     char rsync;
     char overwriteExistingFile;
     char signature;
-    char *script;
-    char *outputpath;
+    char verbose;
     char *interface;
+    char *outputpath;
+    char *script;
     char *url;
     /* The xpath inside the html file to the list of elements that contain the directory names, in which the ISOs are */
     xmlChar *xpath;
@@ -87,14 +88,6 @@ void printLicence(FILE *stream);
  * Prints the @nodes content to @output.
  */
 void print_xpath_nodes(xmlNodeSetPtr nodes, FILE* output);
-
-
-/*
- * This function compares two dates and decides where it goes. For sake of performance, this function is not year 10.000 proof!
- * This function orders newer ISOs in front of older ones!
- * The format of url->title is yyyy.mm.dd
- */
-int compare(const void *p1, const void *p2);
 
 /* This is a callback function to use with cURL, because we want the HTML file
  * to be stored in memory, not in a file.

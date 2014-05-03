@@ -43,19 +43,18 @@ int main(int argc, char **argv)
      * Declaring the used variables and their defaults.
      */
     struct options options;
+    options.ftp = 0;
     options.http = 0;
     options.https = 0;
-    options.ftp = 0;
     options.rsync = 0;
+    options.interface = NULL;
+    options.outputpath = NULL;
     options.overwriteExistingFile = 0;
     options.signature = 0;
     options.script = NULL;
-    options.interface = NULL;
-    options.outputpath = NULL;
     options.url = DEFAULT_MIRROR;
+    options.verbose = 0;
     options.xpath = NULL;
-    /* The memory segment we are going to use for the data cURL downloads.
-     */
 
     /* counter variable for a for loop */
     int i;
@@ -66,14 +65,16 @@ int main(int argc, char **argv)
      * Parsing argv:
      *
      * Recognized parameters are:
-     * -u : For the url
-     * -o : For the path where the file should be written to.
-     * -f : To indicate, that an existing file should be overwritten
+     * -d : For debug output (It's lots!)
      * -e : Specifies a script, that should be executed after the file has been downloaded.
      *          it will execute the following: scriptname isoname
+     * -f : To indicate, that an existing file should be overwritten
+     * -i : For the interface cURL should be using.
+     * -o : For the path where the file should be written to.
+     * -u : For the url
      * -s : To specifiy, that the signature of the file should be checked
      * -X : For the xpath to the html entries
-     * -i : For the interface cURL should be using.
+     * -v : To have verbose output
      * --ftp : To indicate, that the mirror supports ftp
      * --http : To indicate, that the mirror supports http
      * --https : To indicate, that the mirror supports https
@@ -109,6 +110,8 @@ int main(int argc, char **argv)
                 options.interface = argv[i + 1];
                 i++;
             }
+        } else if (!strcmp(argv[i], "-v")) {
+            options.verbose = 1;
         } else if (!strcmp(argv[i], "-x")) {
             if (i + 1 < argc) {
                 options.xpath = (xmlChar *) argv[i + 1];
@@ -171,7 +174,6 @@ int main(int argc, char **argv)
         strcat(foo, "/");
         options.url = foo;
         urlIsOnHeap = 1;
-        printf("new url: %s\n", options.url);
         /* check, if the user has given the iso subdirectory */
     }
 
@@ -190,12 +192,14 @@ int main(int argc, char **argv)
         if(urlIsOnHeap)
             free(options.url);
         options.url = newurl;
-        printf("new url: %s\n", options.url);
+        if(options.verbose)
+            fprintf(stdout,"new url: %s\n", options.url);
         /* <protocol>//host//iso/ should work just fine in cURL, so it isn't catched. */
     }
 
     if (options.http == 1 || options.https == 1) {
-        fprintf(stdout, "Using http(s) transfer method...\n");
+        if(options.verbose)
+            fprintf(stdout, "Using http(s) transfer method...\n");
         ret = handleHTTP(options);
         switch (ret) {
         case 0: useNextMethod = 0;
@@ -208,7 +212,8 @@ int main(int argc, char **argv)
     }
 
     if (useNextMethod && options.ftp) {
-        fprintf(stdout, "Using ftp transfer method...\n");
+        if(options.verbose)
+            fprintf(stdout, "Using ftp transfer method...\n");
         ret = handleFTP(options);
         switch (ret) {
         case 0: useNextMethod = 0;
@@ -220,7 +225,8 @@ int main(int argc, char **argv)
         }
     }
     if (useNextMethod && options.rsync) {
-        fprintf(stdout, "Using rsync transfer method...\n");
+        if(options.verbose)
+            fprintf(stdout, "Using rsync transfer method...\n");
         ret = handleRSYNC(options);
         }
     if(ret == 1) {
