@@ -73,7 +73,6 @@ ssize_t getlinefrommem(char **lineptr, size_t *n, struct memory_identifier *memo
 
     memcpy(*lineptr, memory->chunk+memory->position, i-memory->position);
     (*lineptr)[i-memory->position] = '\0';
-    printf("Newly chosen line: %s\n", *lineptr);
     memory->position = i + 1;
     if (i == memory->length)
         memory->eom = 1;
