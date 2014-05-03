@@ -277,7 +277,7 @@ int handleFTP(struct options options) {
     printf("outputFileName: %s\n", outputFileName);
 
     /* If the file already exists and existing files should not be overwritten, abort */
-    if (!access(outputFileName, F_OK) && !options.overwritteExistingFile) {
+    if (!access(outputFileName, F_OK) && !options.overwriteExistingFile) {
         curl_easy_cleanup(cURLhandle);
         fatal("File already exists!\n");
     }

@@ -40,7 +40,7 @@ struct options {
     char https;
     char ftp;
     char rsync;
-    char overwritteExistingFile;
+    char overwriteExistingFile;
     char signature;
     char *script;
     char *outputpath;

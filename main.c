@@ -37,7 +37,7 @@
  */
 int main(int argc, char **argv)
 {
-    
+
     /* The options struct that holds all the options */
     /*
      * Declaring the used variables and their defaults.
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     options.https = 0;
     options.ftp = 0;
     options.rsync = 0;
-    options.overwritteExistingFile = 0;
+    options.overwriteExistingFile = 0;
     options.signature = 0;
     options.script = NULL;
     options.interface = NULL;
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
                 fatal("You need to specify a path to a script after the \"-e\" option!\n");
             }
         }else if (!strcmp(argv[i], "-f")) {
-            options.overwritteExistingFile = 1;
+            options.overwriteExistingFile = 1;
         } else if (!strcmp(argv[i], "-i")) {
             if (i + 1 < argc) {
                 options.interface = argv[i + 1];
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
     /* check if the script is executable */
     if(options.script != NULL && access(options.script, X_OK) != 0)
         fatal("The script isn't executable!\n");
-    
+
     /* length variable*/
     size_t length = strlen(options.url);
     char urlIsOnHeap = 0;
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
 
     /* Check if the user already gave us the /iso/ subdirectory where
      * ISOs are usually stored in on the mirror
-     * We don't need to take care of double forward slashes, 
+     * We don't need to take care of double forward slashes,
      * because curl handles that fine.
      */
     if (!strstr(options.url, "/iso/")) {
@@ -193,7 +193,7 @@ int main(int argc, char **argv)
         printf("new url: %s\n", options.url);
         /* <protocol>//host//iso/ should work just fine in cURL, so it isn't catched. */
     }
-    
+
     if (options.http == 1 || options.https == 1) {
         fprintf(stdout, "Using http(s) transfer method...\n");
         ret = handleHTTP(options);

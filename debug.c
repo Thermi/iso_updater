@@ -34,7 +34,7 @@ void fatal(char *message) {
 }
 
 /*
- * Memory allocatio with error handling
+ * Memory allocation with error handling
  * malloc + calloc
  */
 void *ec_malloc(size_t size) {
