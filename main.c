@@ -164,11 +164,13 @@ int main(int argc, char **argv)
         fatal("The script isn't executable!\n");
 
     /* check if the outputpath is a directory */
-    if (options.outputpath[strlen(options.outputpath)-1] != '/') {
-        DIR *dir = opendir(options.outputpath);
-        if (dir) {
-            closedir(dir);
-            fatal("The specified output path is a directory! The file can't be saved to that!\n");
+    if (options.outputpath != NULL) {
+        if (options.outputpath[strlen(options.outputpath) - 1] != '/') {
+            DIR *dir = opendir(options.outputpath);
+            if (dir) {
+                closedir(dir);
+                fatal("The specified output path is a directory! The file can't be saved to that!\n");
+            }
         }
     }
 
