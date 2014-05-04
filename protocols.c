@@ -476,7 +476,10 @@ int handleFTP(struct options options)
     }
     free(sha1sums->chunk);
     free(signature->chunk);
-
+    free(list->chunk);
+    free(sha1sums);
+    free(signature);
+    free(list);
 
     /* ?? Check the signature ?? (gpgme?!)*/
     return returnvalue;
