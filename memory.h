@@ -36,7 +36,7 @@ struct memory {
     char *chunk;
 };
 
-/* 
+/*
  * stores the last chunk, that was used with getlinefrommem()
  */
 struct memory_identifier {
@@ -49,7 +49,7 @@ struct memory_identifier {
 
 
 /* own implementation of getline() for memory access */
-ssize_t getlinefrommem(char **lineptr, size_t  *n, struct memory_identifier *memory);
+ssize_t getlinefrommem(char **lineptr, size_t *n, struct memory_identifier *memory);
 
 
 void initialise_memory_identifiers(void);

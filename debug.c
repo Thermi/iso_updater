@@ -20,13 +20,13 @@
 #include <stdint.h>
 #include <fcntl.h>
 
-
 /*
  * If a fatal error occurs, this function is called and the program exits.
  *
  */
-void fatal(char *message) {
-    char *prefix ="[!!] Fatal Error: ", error_message[strlen(prefix)+strlen(message)+1];
+void fatal(char *message)
+{
+    char *prefix = "[!!] Fatal Error: ", error_message[strlen(prefix) + strlen(message) + 1];
     strcpy(error_message, prefix);
     strcat(error_message, message);
     perror(error_message);
@@ -37,7 +37,8 @@ void fatal(char *message) {
  * Memory allocation with error handling
  * malloc + calloc
  */
-void *ec_malloc(size_t size) {
+void *ec_malloc(size_t size)
+{
     void *ptr;
     ptr = malloc(size);
     if (ptr == NULL) {
@@ -46,7 +47,8 @@ void *ec_malloc(size_t size) {
     return ptr;
 }
 
-void *ec_calloc(size_t nmemb, size_t size) {
+void *ec_calloc(size_t nmemb, size_t size)
+{
     void *ptr;
     ptr = calloc(nmemb, size);
     if (ptr == NULL) {
@@ -65,7 +67,8 @@ void *ec_calloc(size_t nmemb, size_t size) {
  *
  * Write content of the file into the buffer and vice versa
  */
-int ec_open(const char *filename, int mode) {
+int ec_open(const char *filename, int mode)
+{
     int fd;
     fd = open(filename, mode);
     if (fd == -1) {
@@ -74,7 +77,8 @@ int ec_open(const char *filename, int mode) {
     return fd;
 }
 
-void ec_read(const char *filename, uint8_t *buffer, unsigned int bufferlength) {
+void ec_read(const char *filename, uint8_t *buffer, unsigned int bufferlength)
+{
     int fd;
     ssize_t len;
 
@@ -88,7 +92,8 @@ void ec_read(const char *filename, uint8_t *buffer, unsigned int bufferlength) {
     close(fd);
 }
 
-void ec_write(const char *filename, uint8_t *buffer, unsigned int bufferlength) {
+void ec_write(const char *filename, uint8_t *buffer, unsigned int bufferlength)
+{
     int fd;
     ssize_t len;
 

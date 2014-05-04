@@ -16,6 +16,7 @@
 /*
  * Default includes
  */
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -96,8 +97,8 @@ int main(int argc, char **argv)
             } else {
                 fatal("You need to specify a path after the \"-o\" option!\n");
             }
-        } else if(!strcmp(argv[i], "-e")) {
-            if(i + 1 < argc) {
+        } else if (!strcmp(argv[i], "-e")) {
+            if (i + 1 < argc) {
                 options.script = argv[i + 1];
                 i++;
             } else {
@@ -129,13 +130,11 @@ int main(int argc, char **argv)
             options.https = 1;
         } else if (!strcmp(argv[i], "--rsync")) {
             options.rsync = 1;
-        } else if(!strcmp(argv[i], "--help")) {
+        } else if (!strcmp(argv[i], "--help")) {
             printHelpMessage(stderr);
             printLicence(stderr);
             return 0;
-        }
-        else
-        {
+        } else {
             /* Print the error message with the unknown parameter.
              */
             char *error_prefix = "The option \"",
@@ -161,16 +160,25 @@ int main(int argc, char **argv)
         options.rsync = 1;
 
     /* check if the script is executable */
-    if(options.script != NULL && access(options.script, X_OK) != 0)
+    if (options.script != NULL && access(options.script, X_OK) != 0)
         fatal("The script isn't executable!\n");
+
+    /* check if the outputpath is a directory */
+    if (options.outputpath[strlen(options.outputpath)-1] != '/') {
+        DIR *dir = opendir(options.outputpath);
+        if (dir) {
+            closedir(dir);
+            fatal("The specified output path is a directory! The file can't be saved to that!\n");
+        }
+    }
 
     /* length variable*/
     size_t length = strlen(options.url);
     char urlIsOnHeap = 0;
     /* add the missing /, if the user didn't specify the url with it */
-    if(options.url[length-1] != '/') {
-        char *foo = ec_malloc(length+2);
-        memcpy(foo, options.url, length+1);
+    if (options.url[length - 1] != '/') {
+        char *foo = ec_malloc(length + 2);
+        memcpy(foo, options.url, length + 1);
         strcat(foo, "/");
         options.url = foo;
         urlIsOnHeap = 1;
@@ -185,20 +193,20 @@ int main(int argc, char **argv)
     if (!strstr(options.url, "/iso/")) {
         char *newurl = ec_malloc((strlen(options.url) + 6));
         strcpy(newurl, options.url);
-        if(options.url[strlen(options.url)] != '/')
+        if (options.url[strlen(options.url)] != '/')
             strcat(newurl, "iso/");
         else
             strcat(newurl, "/iso/");
-        if(urlIsOnHeap)
+        if (urlIsOnHeap)
             free(options.url);
         options.url = newurl;
-        if(options.verbose)
-            fprintf(stdout,"new url: %s\n", options.url);
+        if (options.verbose)
+            fprintf(stdout, "new url: %s\n", options.url);
         /* <protocol>//host//iso/ should work just fine in cURL, so it isn't catched. */
     }
 
     if (options.http == 1 || options.https == 1) {
-        if(options.verbose)
+        if (options.verbose)
             fprintf(stdout, "Using http(s) transfer method...\n");
         ret = handleHTTP(options);
         switch (ret) {
@@ -212,7 +220,7 @@ int main(int argc, char **argv)
     }
 
     if (useNextMethod && options.ftp) {
-        if(options.verbose)
+        if (options.verbose)
             fprintf(stdout, "Using ftp transfer method...\n");
         ret = handleFTP(options);
         switch (ret) {
@@ -225,17 +233,16 @@ int main(int argc, char **argv)
         }
     }
     if (useNextMethod && options.rsync) {
-        if(options.verbose)
+        if (options.verbose)
             fprintf(stdout, "Using rsync transfer method...\n");
         ret = handleRSYNC(options);
-        }
-    if(ret == 1) {
+    }
+    if (ret == 1) {
         fprintf(stderr, "Could not get the file. Sorry.\n");
         return (EXIT_FAILURE);
     }
     /* Execute the script */
-    if(ret == 0 && options.script != NULL)
-    {
+    if (ret == 0 && options.script != NULL) {
         system(options.script);
     }
 

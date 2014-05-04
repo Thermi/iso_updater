@@ -113,9 +113,7 @@ int strchrs(char character, char *string)
     }
     return 0;
 }
-/*
- * TODO: possible invalid memory access by call to strchrs()
- */
+
 /* This function returns a pointer to the first token of the given string,
  *  seperated by the delimiter. The function does not alter the string. */
 char *strntok(char *string, char delimiter, int length)
@@ -161,15 +159,17 @@ int check(char *string)
     return 0;
 }
 
-int meom(struct memory_identifier *memory) {
-    if(memory == NULL)
+int meom(struct memory_identifier *memory)
+{
+    if (memory == NULL)
         return false;
 
     return (int) memory->eom;
 }
 
-int mrewind(struct memory_identifier *memory) {
-    if(memory == NULL)
+int mrewind(struct memory_identifier *memory)
+{
+    if (memory == NULL)
         return false;
 
     memory->position = 0;
@@ -243,10 +243,10 @@ void printLicence(FILE *stream)
 /* This function prints the help message */
 void printHelpMessage(FILE *stream)
 {
-    int i;
+    size_t i;
 
     struct optionsArray optionsArray;
-    optionsArray.options = (struct option[]) {
+    optionsArray.options = (struct option[]){
         {"URL to the host.", "-u <URL>", NULL},
         {"Path to the host where the iso should be saved to.", "-o <path>", NULL},
         {"Xpath to the attributes in the HTML file, that contains the list of files.", "-X <xpath>", NULL},
@@ -262,7 +262,7 @@ void printHelpMessage(FILE *stream)
     optionsArray.length = 11;
 
     fprintf(stream, "Known parameters for this program:\n");
-    for (i = 0; (size_t) i < optionsArray.length;i++) {
+    for (i = 0; i < optionsArray.length; i++) {
         if (optionsArray.options[i].shortOption != NULL) {
             fprintf(stream, "%s - ", optionsArray.options[i].shortOption);
         }

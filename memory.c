@@ -51,28 +51,29 @@ struct memory_identifier {
 };
 
 /* own implementation of getline() for memory access */
-ssize_t getlinefrommem(char **lineptr, size_t *n, struct memory_identifier *memory) {
+ssize_t getlinefrommem(char **lineptr, size_t *n, struct memory_identifier *memory)
+{
     if (memory->position == memory->length || memory->eom)
         return 0;
 
     size_t i = memory->position;
 
     for (; i < memory->length; i++) {
-        if (memory->chunk[i] == L'\n' || memory->chunk[i] == '\n' || memory->chunk[i] == '\0' ) {
+        if (memory->chunk[i] == L'\n' || memory->chunk[i] == '\n' || memory->chunk[i] == '\0') {
             break;
         }
     }
 
-        memset(*lineptr, 0, *n);
-        if(*lineptr != NULL)
-            free(*lineptr);
+    memset(*lineptr, 0, *n);
+    if (*lineptr != NULL)
+        free(*lineptr);
 
-        *lineptr = malloc(i+1 - memory->position);
-        // *lineptr = realloc(*lineptr, i + 1 - memory->position);
-        *n = i + 1 - memory->position;
+    *lineptr = malloc(i + 1 - memory->position);
+    // *lineptr = realloc(*lineptr, i + 1 - memory->position);
+    *n = i + 1 - memory->position;
 
-    memcpy(*lineptr, memory->chunk+memory->position, i-memory->position);
-    (*lineptr)[i-memory->position] = '\0';
+    memcpy(*lineptr, memory->chunk + memory->position, i - memory->position);
+    (*lineptr)[i - memory->position] = '\0';
     memory->position = i + 1;
     if (i == memory->length)
         memory->eom = 1;
@@ -80,10 +81,10 @@ ssize_t getlinefrommem(char **lineptr, size_t *n, struct memory_identifier *memo
     return i;
 }
 
-
-struct memory_identifier *create_memory_identifier(void) {
-    struct memory_identifier *memory_identifier = malloc(sizeof(struct memory_identifier));
-    if(memory_identifier == NULL)
+struct memory_identifier *create_memory_identifier(void)
+{
+    struct memory_identifier *memory_identifier = malloc(sizeof (struct memory_identifier));
+    if (memory_identifier == NULL)
         return NULL;
 
     memory_identifier->chunk = NULL;
@@ -94,8 +95,9 @@ struct memory_identifier *create_memory_identifier(void) {
     return memory_identifier;
 }
 
-int rewind_memory(struct memory_identifier *memory_identifier) {
-    if(memory_identifier == NULL)
+int rewind_memory(struct memory_identifier *memory_identifier)
+{
+    if (memory_identifier == NULL)
         return false;
 
     memory_identifier->position = 0;
@@ -103,6 +105,7 @@ int rewind_memory(struct memory_identifier *memory_identifier) {
     return true;
 }
 
-int meof(struct memory_identifier *memory_identifier) {
+int meof(struct memory_identifier *memory_identifier)
+{
     return memory_identifier->eom;
 }

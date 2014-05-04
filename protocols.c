@@ -47,7 +47,8 @@
 /*Handles http and https URLs
  * TODO: Finish it
  */
-int handleHTTP(struct options options) {
+int handleHTTP(struct options options)
+{
     /* struct for the html file */
     struct memory_identifier html;
     html.chunk = NULL;
@@ -167,7 +168,8 @@ int handleHTTP(struct options options) {
 }
 
 /*Handles ftp URLs */
-int handleFTP(struct options options) {
+int handleFTP(struct options options)
+{
     struct memory_identifier *list, *sha1sums, *signature;
     int n, returnvalue;
     char directory[strlen(options.url) + directorylength + 8],
@@ -183,7 +185,7 @@ int handleFTP(struct options options) {
      */
 
     /* H4CKS! */
-    memset(directory, 0, strlen(options.url)+directorylength+8);
+    memset(directory, 0, strlen(options.url) + directorylength + 8);
     strcpy(directory, "ftp://");
     strcat(directory, options.url);
 
@@ -211,53 +213,52 @@ int handleFTP(struct options options) {
     do {
         cURLerrorcode = curl_easy_perform(cURLhandle);
         switch (cURLerrorcode) {
-            case CURLE_OK:
-                retry = 0;
-                if(options.verbose)
-                    fprintf(stdout, "Got the directory listing.\n");
-                break;
-            case CURLE_FTP_WEIRD_PASS_REPLY:
-                fprintf(stderr, "The server returned a weird code. Trying again.\n");
-                retry = 1;
-                break;
-            case CURLE_REMOTE_ACCESS_DENIED:
-                fprintf(stderr, "The server returned ACCESS DENIED, aborting ftp...\n");
-                curl_easy_cleanup(cURLhandle);
-                return 1;
-                break;
-            case CURLE_FTP_COULDNT_RETR_FILE:
-                fprintf(stderr, "Couldn't retrieve %s. Aborting ftp...\n", options.url);
-                curl_easy_cleanup(cURLhandle);
-                return 1;
-                break;
-            case CURLE_COULDNT_CONNECT:
-                fprintf(stderr, "Couldn't connect to %s. Aborting ftp...\n", options.url);
-                curl_easy_cleanup(cURLhandle);
-                return 1;
-                break;
-            case CURLE_COULDNT_RESOLVE_HOST:
-                fprintf(stderr, "Couldn't resolve %s. Aborting.\n", directory);
-                curl_easy_cleanup(cURLhandle);
-                fatal("Couldn't resolve host!\n");
-                break;
-            case CURLE_FTP_COULDNT_SET_TYPE:
-                fprintf(stderr, "Couldn't set ftp transfer type. Aborting ftp...\n");
-                curl_easy_cleanup(cURLhandle);
-                return 1;
-                break;
-            default:
-                printf("Something bad happened...\n");
-                printf("Error: %s\n", buffer);
-                curl_easy_cleanup(cURLhandle);
-                retry = 0;
-                break;
+        case CURLE_OK:
+            retry = 0;
+            if (options.verbose)
+                fprintf(stdout, "Got the directory listing.\n");
+            break;
+        case CURLE_FTP_WEIRD_PASS_REPLY:
+            fprintf(stderr, "The server returned a weird code. Trying again.\n");
+            retry = 1;
+            break;
+        case CURLE_REMOTE_ACCESS_DENIED:
+            fprintf(stderr, "The server returned ACCESS DENIED, aborting ftp...\n");
+            curl_easy_cleanup(cURLhandle);
+            return 1;
+            break;
+        case CURLE_FTP_COULDNT_RETR_FILE:
+            fprintf(stderr, "Couldn't retrieve %s. Aborting ftp...\n", options.url);
+            curl_easy_cleanup(cURLhandle);
+            return 1;
+            break;
+        case CURLE_COULDNT_CONNECT:
+            fprintf(stderr, "Couldn't connect to %s. Aborting ftp...\n", options.url);
+            curl_easy_cleanup(cURLhandle);
+            return 1;
+            break;
+        case CURLE_COULDNT_RESOLVE_HOST:
+            fprintf(stderr, "Couldn't resolve %s. Aborting.\n", directory);
+            curl_easy_cleanup(cURLhandle);
+            fatal("Couldn't resolve host!\n");
+            break;
+        case CURLE_FTP_COULDNT_SET_TYPE:
+            fprintf(stderr, "Couldn't set ftp transfer type. Aborting ftp...\n");
+            curl_easy_cleanup(cURLhandle);
+            return 1;
+            break;
+        default:
+            printf("Something bad happened...\n");
+            printf("Error: %s\n", buffer);
+            curl_easy_cleanup(cURLhandle);
+            retry = 0;
+            break;
         }
         n++;
     } while (retry && n < 3);
 
     ptr = strnstr(list->chunk, "dual.iso", list->length);
-    if(ptr == NULL)
-    {
+    if (ptr == NULL) {
         printf("Oops, something bad happened.\n");
         printf("Dump of the list: %s\n", list->chunk);
         fatal("A fatal error has occured.\n");
@@ -277,8 +278,13 @@ int handleFTP(struct options options) {
      * If it is not set, write the iso to the current work directory
      */
     if (options.outputpath != NULL) {
-        outputFileName = ec_malloc((strlen(fileName) + strlen(options.outputpath) + 2));
-        sprintf(outputFileName, "%s%s%s", options.outputpath, "/", fileName);
+        /* Test if the path is a directory */
+        if (options.outputpath[strlen(options.outputpath)-1] == '/') {
+            outputFileName = ec_malloc((strlen(fileName) + strlen(options.outputpath) + 1));
+            sprintf(outputFileName, "%s%s", options.outputpath, fileName);
+        } else {
+            outputFileName = options.outputpath;
+        }
     } else {
         outputFileName = fileName;
     }
@@ -312,43 +318,43 @@ int handleFTP(struct options options) {
     do {
         cURLerrorcode = curl_easy_perform(cURLhandle);
         switch (cURLerrorcode) {
-            case CURLE_OK:
-                if(options.verbose)
-                    fprintf(stdout, "Got the iso from the mirror.\n");
-                retry = 0;
-                break;
-            case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
-                        "The server returned a weird code. Trying again.\n");
-                retry = 1;
-                file = freopen(outputFileName, "w+", file);
-                break;
-            case CURLE_REMOTE_ACCESS_DENIED:
-                fprintf(stderr, "The server returned ACCESS DENIED, aborting ftp...\n");
-                curl_easy_cleanup(cURLhandle);
-                fclose(file);
-                return 1;
-                break;
-            case CURLE_FTP_COULDNT_RETR_FILE:
-                fprintf(stderr, "Couldn't retrieve %s. Aborting ftp...\n", iso);
-                fclose(file);
-                return 1;
-                break;
-            case CURLE_COULDNT_CONNECT:
-                fprintf(stderr, "Couldn't connect to %s. Aborting ftp...\n", options.url);
-                fclose(file);
-                return 1;
-                break;
-            case CURLE_COULDNT_RESOLVE_HOST:
-                fprintf(stderr, "Couldn't resolve %s. Aborting.\n", options.url);
-                fatal("Couldn't resolve host!\n");
-                break;
-            case CURLE_FTP_COULDNT_SET_TYPE:
-                fprintf(stderr, "Couldn't set ftp transfer type. Aborting ftp...\n");
-                fclose(file);
-                return 1;
-                break;
-            default: retry = 0;
-                break;
+        case CURLE_OK:
+            if (options.verbose)
+                fprintf(stdout, "Got the iso from the mirror.\n");
+            retry = 0;
+            break;
+        case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
+                    "The server returned a weird code. Trying again.\n");
+            retry = 1;
+            file = freopen(outputFileName, "w+", file);
+            break;
+        case CURLE_REMOTE_ACCESS_DENIED:
+            fprintf(stderr, "The server returned ACCESS DENIED, aborting ftp...\n");
+            curl_easy_cleanup(cURLhandle);
+            fclose(file);
+            return 1;
+            break;
+        case CURLE_FTP_COULDNT_RETR_FILE:
+            fprintf(stderr, "Couldn't retrieve %s. Aborting ftp...\n", iso);
+            fclose(file);
+            return 1;
+            break;
+        case CURLE_COULDNT_CONNECT:
+            fprintf(stderr, "Couldn't connect to %s. Aborting ftp...\n", options.url);
+            fclose(file);
+            return 1;
+            break;
+        case CURLE_COULDNT_RESOLVE_HOST:
+            fprintf(stderr, "Couldn't resolve %s. Aborting.\n", options.url);
+            fatal("Couldn't resolve host!\n");
+            break;
+        case CURLE_FTP_COULDNT_SET_TYPE:
+            fprintf(stderr, "Couldn't set ftp transfer type. Aborting ftp...\n");
+            fclose(file);
+            return 1;
+            break;
+        default: retry = 0;
+            break;
         }
         n++;
     } while (retry == 1 && n < 3);
@@ -362,44 +368,44 @@ int handleFTP(struct options options) {
     do {
         cURLerrorcode = curl_easy_perform(cURLhandle);
         switch (cURLerrorcode) {
-            case CURLE_OK:
-                if(options.verbose)
-                    fprintf(stdout, "Got the sha1sums.txt file from the server");
-                retry = 0;
-                break;
-            case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
-                        "The server returned a weird code. Trying again.\n");
-                retry = 1;
-                break;
-            case CURLE_REMOTE_ACCESS_DENIED:
-                fprintf(stderr, "The server returned ACCESS DENIED, aborting ftp...\n");
-                curl_easy_cleanup(cURLhandle);
-                fclose(file);
-                return 1;
-                break;
-            case CURLE_FTP_COULDNT_RETR_FILE:
-                fprintf(stderr, "Couldn't retrieve %s. Aborting ftp...\n", sha1sumsURL);
-                fclose(file);
-                return 1;
-                break;
-            case CURLE_COULDNT_CONNECT:
-                fprintf(stderr, "Couldn't connect to %s. Aborting ftp...\n", options.url);
-                fclose(file);
-                return 1;
-                break;
-            case CURLE_COULDNT_RESOLVE_HOST:
-                fprintf(stderr, "Couldn't resolve %s. Aborting.\n", sha1sumsURL);
-                fatal("Couldn't resolve host!\n");
-                break;
-            case CURLE_FTP_COULDNT_SET_TYPE:
-                fprintf(stderr, "Couldn't set ftp transfer type. Aborting ftp...\n");
-                fclose(file);
-                return 1;
-                break;
-            default: retry = 0;
-                printf("Error: %s\n", buffer);
-                fatal("A fatal error occured.\n");
-                break;
+        case CURLE_OK:
+            if (options.verbose)
+                fprintf(stdout, "Got sha1sums.txt from the mirror\n");
+            retry = 0;
+            break;
+        case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
+                    "The server returned a weird code. Trying again.\n");
+            retry = 1;
+            break;
+        case CURLE_REMOTE_ACCESS_DENIED:
+            fprintf(stderr, "The server returned ACCESS DENIED, aborting ftp...\n");
+            curl_easy_cleanup(cURLhandle);
+            fclose(file);
+            return 1;
+            break;
+        case CURLE_FTP_COULDNT_RETR_FILE:
+            fprintf(stderr, "Couldn't retrieve %s. Aborting ftp...\n", sha1sumsURL);
+            fclose(file);
+            return 1;
+            break;
+        case CURLE_COULDNT_CONNECT:
+            fprintf(stderr, "Couldn't connect to %s. Aborting ftp...\n", options.url);
+            fclose(file);
+            return 1;
+            break;
+        case CURLE_COULDNT_RESOLVE_HOST:
+            fprintf(stderr, "Couldn't resolve %s. Aborting.\n", sha1sumsURL);
+            fatal("Couldn't resolve host!\n");
+            break;
+        case CURLE_FTP_COULDNT_SET_TYPE:
+            fprintf(stderr, "Couldn't set ftp transfer type. Aborting ftp...\n");
+            fclose(file);
+            return 1;
+            break;
+        default: retry = 0;
+            printf("Error: %s\n", buffer);
+            fatal("A fatal error occured.\n");
+            break;
         }
         n++;
     } while (retry && n < 3);
@@ -415,42 +421,42 @@ int handleFTP(struct options options) {
         do {
             cURLerrorcode = curl_easy_perform(cURLhandle);
             switch (cURLerrorcode) {
-                case CURLE_OK:
-                    if(options.verbose)
-                        fprintf(stdout, "Got the signature from the mirror.\n");
-                    retry = 0;
-                    break;
-                case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
-                            "The server returned a weird code. Trying again.\n");
-                    retry = 1;
-                    break;
-                case CURLE_REMOTE_ACCESS_DENIED:
-                    fprintf(stderr, "The server returned ACCESS DENIED, aborting ftp...\n");
-                    curl_easy_cleanup(cURLhandle);
-                    fclose(file);
-                    return 1;
-                    break;
-                case CURLE_FTP_COULDNT_RETR_FILE:
-                    fprintf(stderr, "Couldn't retrieve %s. Aborting ftp...\n", signatureURL);
-                    fclose(file);
-                    return 1;
-                    break;
-                case CURLE_COULDNT_CONNECT:
-                    fprintf(stderr, "Couldn't connect to %s. Aborting ftp...\n", options.url);
-                    fclose(file);
-                    return 1;
-                    break;
-                case CURLE_COULDNT_RESOLVE_HOST:
-                    fprintf(stderr, "Couldn't resolve %s. Aborting.\n", signatureURL);
-                    fatal("Couldn't resolve host!\n");
-                    break;
-                case CURLE_FTP_COULDNT_SET_TYPE:
-                    fprintf(stderr, "Couldn't set ftp transfer type. Aborting ftp...\n");
-                    fclose(file);
-                    return 1;
-                    break;
-                default: retry = 0;
-                    break;
+            case CURLE_OK:
+                if (options.verbose)
+                    fprintf(stdout, "Got the signature from the mirror.\n");
+                retry = 0;
+                break;
+            case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
+                        "The server returned a weird code. Trying again.\n");
+                retry = 1;
+                break;
+            case CURLE_REMOTE_ACCESS_DENIED:
+                fprintf(stderr, "The server returned ACCESS DENIED, aborting ftp...\n");
+                curl_easy_cleanup(cURLhandle);
+                fclose(file);
+                return 1;
+                break;
+            case CURLE_FTP_COULDNT_RETR_FILE:
+                fprintf(stderr, "Couldn't retrieve %s. Aborting ftp...\n", signatureURL);
+                fclose(file);
+                return 1;
+                break;
+            case CURLE_COULDNT_CONNECT:
+                fprintf(stderr, "Couldn't connect to %s. Aborting ftp...\n", options.url);
+                fclose(file);
+                return 1;
+                break;
+            case CURLE_COULDNT_RESOLVE_HOST:
+                fprintf(stderr, "Couldn't resolve %s. Aborting.\n", signatureURL);
+                fatal("Couldn't resolve host!\n");
+                break;
+            case CURLE_FTP_COULDNT_SET_TYPE:
+                fprintf(stderr, "Couldn't set ftp transfer type. Aborting ftp...\n");
+                fclose(file);
+                return 1;
+                break;
+            default: retry = 0;
+                break;
             }
             n++;
         } while (retry && n < 3);
@@ -477,7 +483,8 @@ int handleFTP(struct options options) {
 }
 
 /*Handles rsync URLs*/
-int handleRSYNC(struct options options) {
+int handleRSYNC(struct options options)
+{
     fprintf(stderr, "rsync support is still to be implemented. Sorry.\n");
     fflush(stderr);
     // TODO: implement
