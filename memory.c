@@ -78,7 +78,7 @@ ssize_t getlinefrommem(char **lineptr, size_t *n, struct memory_identifier *memo
     if (i == memory->length)
         memory->eom = 1;
 
-    return i;
+    return i-memory->position;
 }
 
 struct memory_identifier *create_memory_identifier(void)
