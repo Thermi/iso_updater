@@ -19,14 +19,13 @@ CFLAGSOPT=-std=c11 -Wall -ggdb -O2 -march=native -fbuiltin -Wstrict-prototypes -
 TRGT=main.c
 LIBS=-lcurl -lxml2 -lgpgme -lassuan -lgpg-error
 LIBFILES=debug.c sha1.c protocols.c util.c memory.c md5sum.c
-all:
-	make build
-	make check
-build:
+all: build check
+	
+build: $(LIBFILES) $(TRGT)
 	$(CC) $(CFLAGSOPT) $(LIBS) $(LIBFILES) -o iso_updater $(TRGT)
-check:
+check: check.c
 	$(CC) $(CFLAGSOPT) $(LIBS) $(LIBFILES) -o check check.c
-debug:
+debug: $(LIBFILES) $(TRGT)
 	$(CC) $(CFLAGSDEBUG) $(LIBS) $(LIBFILES) -o iso_updater $(TRGT)
-clean:
+clean: 
 	./remove.sh
