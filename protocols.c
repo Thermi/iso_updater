@@ -172,24 +172,20 @@ int handleFTP(struct options options)
 {
     struct memory_identifier *list, *sha1sums, *signature;
     int n, returnvalue;
-    char directory[strlen(options.url) + directorylength + 8],
-            retry = 0, *ptr, fileName[isolength],
-            *outputFileName, *signatureURL, buffer[CURL_ERROR_SIZE];
-
+    char *directory = NULL, *ptr, *outputFileName, retry = 0, fileName[isolength],
+            *signatureURL, buffer[CURL_ERROR_SIZE];
+    size_t options_url_length = strlen(options.url) + 1;
     list = create_memory_identifier();
     sha1sums = create_memory_identifier();
     signature = create_memory_identifier();
 
-    /* Because of a bug in cURL, we have to prepend the protocol to be used to the URL, if it's not already included.
-     * cURL currently does not seem to honor CURLOPT_PROTOCOLS
-     */
+    directory = calloc(1, options_url_length + directorylength + 1);
+    if(!strstr(options.url, "ftp://")) {
+         snprintf(directory, options_url_length, "ftp://%s", options.url);
+    } else {
+        snprintf(directory, options_url_length, "%s", options.url);
+    }
 
-    /* H4CKS! */
-    memset(directory, 0, strlen(options.url) + directorylength + 8);
-    strcpy(directory, "ftp://");
-    strcat(directory, options.url);
-
-    /* END OF H4CKS! */
 
     FILE *file = NULL;
     CURL *cURLhandle = NULL;
@@ -480,6 +476,7 @@ int handleFTP(struct options options)
     free(sha1sums);
     free(signature);
     free(list);
+    free(directory);
 
     /* ?? Check the signature ?? (gpgme?!)*/
     return returnvalue;
