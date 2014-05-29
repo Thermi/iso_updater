@@ -180,11 +180,11 @@ int handleFTP(struct options options)
     sha1sums = create_memory_identifier();
     signature = create_memory_identifier();
 
-    directory = calloc(1, strlen(options.url) + directorylength + 2);
+    directory = ec_malloc(strlen(options.url) + directorylength + 2);
     if(!strstr(options.url, "ftp://")) {
-         snprintf(directory, maxlength + 6 , "ftp://%s", options.url);
+         snprintf(directory, strlen(options.url) + directorylength +2, "ftp://%s", options.url);
     } else {
-        snprintf(directory, maxlength, "%s", options.url);
+        snprintf(directory, strlen(options.url) + directorylength +2, "%s", options.url);
     }
 
 
