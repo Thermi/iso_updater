@@ -43,7 +43,7 @@
 #define directorylength 11
 #define isolength 30
 #define sha1sumslength 14
-#define maxlength 80
+#define maxlength 255
 
 /*Handles http and https URLs
  * TODO: Finish it
@@ -180,11 +180,11 @@ int handleFTP(struct options options)
     sha1sums = create_memory_identifier();
     signature = create_memory_identifier();
 
-    directory = ec_malloc(strlen(options.url) + directorylength + 2);
+    directory = ec_malloc(maxlength);
     if(!strstr(options.url, "ftp://")) {
-         snprintf(directory, strlen(options.url) + directorylength +2, "ftp://%s", options.url);
+         snprintf(directory, maxlength, "ftp://%s", options.url);
     } else {
-        snprintf(directory, strlen(options.url) + directorylength +2, "%s", options.url);
+        snprintf(directory, maxlength, "%s", options.url);
     }
 
 
