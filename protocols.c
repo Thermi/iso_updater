@@ -43,6 +43,7 @@
 #define directorylength 11
 #define isolength 30
 #define sha1sumslength 14
+#define maxlength 80
 
 /*Handles http and https URLs
  * TODO: Finish it
@@ -174,16 +175,16 @@ int handleFTP(struct options options)
     int n, returnvalue;
     char *directory = NULL, *ptr, *outputFileName, retry = 0, fileName[isolength],
             *signatureURL, buffer[CURL_ERROR_SIZE];
-    size_t options_url_length = strlen(options.url) + 1;
+
     list = create_memory_identifier();
     sha1sums = create_memory_identifier();
     signature = create_memory_identifier();
 
-    directory = calloc(1, options_url_length + directorylength + 1);
+    directory = calloc(1, strlen(options.url) + directorylength + 2);
     if(!strstr(options.url, "ftp://")) {
-         snprintf(directory, options_url_length, "ftp://%s", options.url);
+         snprintf(directory, maxlength + 6 , "ftp://%s", options.url);
     } else {
-        snprintf(directory, options_url_length, "%s", options.url);
+        snprintf(directory, maxlength, "%s", options.url);
     }
 
 
