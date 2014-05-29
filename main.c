@@ -195,10 +195,11 @@ int main(int argc, char **argv)
     if (!strstr(options.url, "/iso/")) {
         char *newurl = ec_malloc((strlen(options.url) + 6));
         strcpy(newurl, options.url);
-        if (options.url[strlen(options.url)] != '/')
+        if (options.url[strlen(options.url)] != '/') {
             strcat(newurl, "iso/");
-        else
+        } else {
             strcat(newurl, "/iso/");
+        }
         if (urlIsOnHeap)
             free(options.url);
         options.url = newurl;
