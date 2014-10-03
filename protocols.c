@@ -322,8 +322,8 @@ int handleFTP(struct options options)
                 fprintf(stdout, "Got the iso from the mirror.\n");
             retry = 0;
             break;
-        case CURLE_FTP_WEIRD_PASS_REPLY: fprintf(stderr,
-                    "The server returned a weird code. Trying again.\n");
+        case CURLE_FTP_WEIRD_PASS_REPLY:
+            fprintf(stderr, "The server returned a weird code. Trying again.\n");
             retry = 1;
             file = freopen(outputFileName, "w+", file);
             break;
