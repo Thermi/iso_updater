@@ -36,6 +36,7 @@ struct optionsArray {
 };
 
 struct options {
+    char debug;
     char ftp;
     char http;
     char https;
