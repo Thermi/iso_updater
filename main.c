@@ -260,7 +260,6 @@ int main(int argc, char **argv)
             fatal("Couldn't fork!\n");
             abort();
         }
-        system(options.script);
     }
 
     return (EXIT_SUCCESS);
