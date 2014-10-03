@@ -44,6 +44,7 @@ int main(int argc, char **argv)
      * Declaring the used variables and their defaults.
      */
     struct options options;
+    options.debug = 0;
     options.ftp = 0;
     options.http = 0;
     options.https = 0;
@@ -120,6 +121,8 @@ int main(int argc, char **argv)
             } else {
                 fatal("You need to specify an xpath after the \"-x\" option!\n");
             }
+        } else if (!strcmp(argv[i], "-d")) {
+            options.debug = true;
         } else if (!strcmp(argv[i], "-s")) {
             options.signature = 1;
         } else if (!strcmp(argv[i], "--ftp")) {
