@@ -68,7 +68,7 @@ int main(int argc, char **argv)
      * Recognized parameters are:
      * -d : For debug output (It's lots!)
      * -e : Specifies a script, that should be executed after the file has been downloaded.
-     *          it will execute the following: scriptname isoname
+     *          it will execute the following: scriptname isopath
      * -f : To indicate, that an existing file should be overwritten
      * -i : For the interface cURL should be using.
      * -o : For the path where the file should be written to.
@@ -246,6 +246,17 @@ int main(int argc, char **argv)
     }
     /* Execute the script */
     if (ret == 0 && options.script != NULL) {
+        char *script = malloc(strlen(options.script) + 3);
+        memcpy(script, "./", 2);
+        memcpy(script + 2, options.script, strlen(options.script) + 1);
+        int ret = fork();
+        if (ret) {
+            char *array[2] = {globalOutputFileName, 0 };
+            execvp(script, array);
+        } else {
+            fatal("Couldn't fork!\n");
+            abort();
+        }
         system(options.script);
     }
 
