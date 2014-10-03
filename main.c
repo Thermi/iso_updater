@@ -121,7 +121,7 @@ int main(int argc, char **argv)
             } else {
                 fatal("You need to specify an xpath after the \"-x\" option!\n");
             }
-        } else if (!strcmp(argv[i], "-d")) {
+       } else if (!strcmp(argv[i], "-d")) {
             options.debug = true;
         } else if (!strcmp(argv[i], "-s")) {
             options.signature = 1;
@@ -206,13 +206,13 @@ int main(int argc, char **argv)
         if (urlIsOnHeap)
             free(options.url);
         options.url = newurl;
-        if (options.verbose)
+        if (options.verbose | options.debug)
             fprintf(stdout, "new url: %s\n", options.url);
         /* <protocol>//host//iso/ should work just fine in cURL, so it isn't catched. */
     }
 
     if (options.http == 1 || options.https == 1) {
-        if (options.verbose)
+        if (options.verbose | options.debug)
             fprintf(stdout, "Using http(s) transfer method...\n");
         ret = handleHTTP(options);
         switch (ret) {
@@ -226,7 +226,7 @@ int main(int argc, char **argv)
     }
 
     if (useNextMethod && options.ftp) {
-        if (options.verbose)
+        if (options.verbose | options.debug)
             fprintf(stdout, "Using ftp transfer method...\n");
         ret = handleFTP(options);
         switch (ret) {
@@ -239,7 +239,7 @@ int main(int argc, char **argv)
         }
     }
     if (useNextMethod && options.rsync) {
-        if (options.verbose)
+        if (options.verbose | options.debug)
             fprintf(stdout, "Using rsync transfer method...\n");
         ret = handleRSYNC(options);
     }
