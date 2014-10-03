@@ -18,6 +18,8 @@
 #define isolength 30
 #define sha1sumslength 14
 
+char *globalOutputFileName;
+
 /*Handles http and https URLs*/
 int handleHTTP(struct options options);
 

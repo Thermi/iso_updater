@@ -45,6 +45,7 @@
 #define sha1sumslength 14
 #define maxlength 255
 
+char *globalOutputFileName;
 /*Handles http and https URLs
  * TODO: Finish it
  */
@@ -285,6 +286,7 @@ int handleFTP(struct options options)
     } else {
         outputFileName = fileName;
     }
+    globalOutputFileName = outputFileName;
     printf("outputFileName: %s\n", outputFileName);
 
     /* If the file already exists and existing files should not be overwritten, abort */
@@ -294,7 +296,7 @@ int handleFTP(struct options options)
     }
 
     /* If the file exists, but we're not allowed to write to it, abort */
-    if (!access(outputFileName, F_OK) && access(outputFileName, W_OK)) {
+    if (!access(outputFileName, F_OK|W_OK)) {
         curl_easy_cleanup(cURLhandle);
         fatal("Can't write to the file!\n");
     }
