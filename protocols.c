@@ -46,6 +46,7 @@
 #define maxlength 255
 
 char *globalOutputFileName;
+
 /*Handles http and https URLs
  * TODO: Finish it
  */
@@ -182,8 +183,8 @@ int handleFTP(struct options options)
     signature = create_memory_identifier();
 
     directory = ec_malloc(maxlength);
-    if(!strstr(options.url, "ftp://")) {
-         snprintf(directory, maxlength, "ftp://%s", options.url);
+    if (!strstr(options.url, "ftp://")) {
+        snprintf(directory, maxlength, "ftp://%s", options.url);
     } else {
         snprintf(directory, maxlength, "%s", options.url);
     }
@@ -208,12 +209,14 @@ int handleFTP(struct options options)
     curl_easy_setopt(cURLhandle, CURLOPT_WRITEFUNCTION, writeDataCallback);
     curl_easy_setopt(cURLhandle, CURLOPT_WRITEDATA, list);
     n = 0;
+    if (options.verbose | options.debug)
+        fprintf(stdout, "Getting directory listing...\n");
     do {
         cURLerrorcode = curl_easy_perform(cURLhandle);
         switch (cURLerrorcode) {
         case CURLE_OK:
             retry = 0;
-            if (options.verbose)
+            if (options.verbose | options.debug)
                 fprintf(stdout, "Got the directory listing.\n");
             break;
         case CURLE_FTP_WEIRD_PASS_REPLY:
@@ -277,7 +280,7 @@ int handleFTP(struct options options)
      */
     if (options.outputpath != NULL) {
         /* Test if the path is a directory */
-        if (options.outputpath[strlen(options.outputpath)-1] == '/') {
+        if (options.outputpath[strlen(options.outputpath) - 1] == '/') {
             outputFileName = ec_malloc((strlen(fileName) + strlen(options.outputpath) + 1));
             sprintf(outputFileName, "%s%s", options.outputpath, fileName);
         } else {
@@ -287,7 +290,8 @@ int handleFTP(struct options options)
         outputFileName = fileName;
     }
     globalOutputFileName = outputFileName;
-    printf("outputFileName: %s\n", outputFileName);
+    if (options.debug)
+        fprintf(stdout, "outputFileName: %s\n", outputFileName);
 
     /* If the file already exists and existing files should not be overwritten, abort */
     if (!access(outputFileName, F_OK) && !options.overwriteExistingFile) {
@@ -296,14 +300,15 @@ int handleFTP(struct options options)
     }
 
     /* If the file exists, but we're not allowed to write to it, abort */
-    if (!access(outputFileName, F_OK|W_OK)) {
+    if (!access(outputFileName, F_OK | W_OK)) {
         curl_easy_cleanup(cURLhandle);
         fatal("Can't write to the file!\n");
     }
 
     /* Open the file in the write mode */
     file = fopen(outputFileName, "w+");
-
+    if (options.debug)
+        fprintf(stdout, "Opened file for write and append.\n");
     /* counter for tries and variable for retrying*/
     n = 0;
     retry = 0;
@@ -318,7 +323,7 @@ int handleFTP(struct options options)
         cURLerrorcode = curl_easy_perform(cURLhandle);
         switch (cURLerrorcode) {
         case CURLE_OK:
-            if (options.verbose)
+            if (options.verbose | options.debug)
                 fprintf(stdout, "Got the iso from the mirror.\n");
             retry = 0;
             break;
@@ -368,7 +373,7 @@ int handleFTP(struct options options)
         cURLerrorcode = curl_easy_perform(cURLhandle);
         switch (cURLerrorcode) {
         case CURLE_OK:
-            if (options.verbose)
+            if (options.verbose | options.debug)
                 fprintf(stdout, "Got sha1sums.txt from the mirror\n");
             retry = 0;
             break;
@@ -411,6 +416,8 @@ int handleFTP(struct options options)
 
     /* Do curl foo for signature */
     if (options.signature) {
+        if (options.verbose | options.debug)
+            fprintf(stdout, "Getting signature from the mirror.\n");
         signatureURL = ec_malloc(strlen(iso) + 5);
         sprintf(signatureURL, "%s%s", iso, ".sig");
         curl_easy_setopt(cURLhandle, CURLOPT_URL, signatureURL);
@@ -421,7 +428,7 @@ int handleFTP(struct options options)
             cURLerrorcode = curl_easy_perform(cURLhandle);
             switch (cURLerrorcode) {
             case CURLE_OK:
-                if (options.verbose)
+                if (options.verbose | options.debug)
                     fprintf(stdout, "Got the signature from the mirror.\n");
                 retry = 0;
                 break;
@@ -461,6 +468,8 @@ int handleFTP(struct options options)
         } while (retry && n < 3);
 
     }
+    if (options.debug | options.verbose)
+        fprintf(stdout, "Checking the digest.\n");
     /* check dual-iso with sha1sum*/
     returnvalue = digest_check(outputFileName, sha1sums);
 
