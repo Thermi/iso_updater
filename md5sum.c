@@ -216,7 +216,7 @@ split_3(char *s, size_t s_len,
        information.  */
     if (s_len - i < min_digest_line_length + (s[i] == '\\')) {
         return false;
-        printf("Digest is too short!\n");
+        fprintf(stdout, "Digest is too short!\n");
     }
 
     *hex_digest = (unsigned char *) &s[i];
@@ -226,7 +226,7 @@ split_3(char *s, size_t s_len,
        immediately by a white space it's an error.  */
     i += digest_hex_bytes;
     if (!ISWHITE(s[i])) {
-        printf("The digest is not followed by a white space!\n");
+        fprintf(stdout, "The digest is not followed by a white space!\n");
         return false;
     }
 
@@ -337,8 +337,8 @@ digest_check(char *path, struct memory_identifier *memory)
                 && hex_digits(hex_digest))) {
             ++n_misformatted_lines;
             ++n_improperly_formatted_lines;
-            printf("misformatted lines: %ju\n", n_misformatted_lines);
-            printf("improperly formatted lines: %ju\n", n_improperly_formatted_lines);
+            fprintf(stdout, "misformatted lines: %ju\n", n_misformatted_lines);
+            fprintf(stdout, "improperly formatted lines: %ju\n", n_improperly_formatted_lines);
         } else {
             const char bin2hex[] = {'0', '1', '2', '3',
                 '4', '5', '6', '7',
@@ -353,7 +353,7 @@ digest_check(char *path, struct memory_identifier *memory)
 
                 if (!ok) {
                     ++n_open_or_read_failures;
-                    printf("%s: FAILED open or read\n", path);
+                    fprintf(stdout, "%s: FAILED open or read\n", path);
                 } else {
                     size_t digest_bin_bytes = digest_hex_bytes / 2;
                     size_t cnt;
@@ -370,13 +370,13 @@ digest_check(char *path, struct memory_identifier *memory)
                         ++n_mismatched_checksums;
 
                     if (cnt != digest_bin_bytes) {
-                        printf("Count: %zi\n", cnt);
-                        printf("%s: %s\n", path, "FAILED");
+                        fprintf(stdout, "Count: %zi\n", cnt);
+                        fprintf(stdout, "%s: %s\n", path, "FAILED");
                         free(line);
                         return 1;
                     } else {
-                        printf("Count: %zi\n", cnt);
-                        printf("%s: %s\n", path, "OK");
+                        fprintf(stdout, "Count: %zi\n", cnt);
+                        fprintf(stdout, "%s: %s\n", path, "OK");
                         free(line);
                         return 0;
                     }
