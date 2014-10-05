@@ -369,10 +369,17 @@ digest_check(char *path, struct memory_identifier *memory)
                     if (cnt != digest_bin_bytes)
                         ++n_mismatched_checksums;
 
-                    if (cnt != digest_bin_bytes)
+                    if (cnt != digest_bin_bytes) {
+                        printf("Count: %zi\n", cnt);
                         printf("%s: %s\n", path, "FAILED");
-                    else
+                        free(line);
+                        return 1;
+                    } else {
+                        printf("Count: %zi\n", cnt);
                         printf("%s: %s\n", path, "OK");
+                        free(line);
+                        return 0;
+                    }
 
                 }
             }
@@ -412,6 +419,7 @@ digest_check(char *path, struct memory_identifier *memory)
 
     }
 
+    /* This returns 0, if all lines were properly formatted and > 0, if anything else happened.*/
     return (n_properly_formatted_lines != 0
             && n_mismatched_checksums == 0
             && n_open_or_read_failures == 0
